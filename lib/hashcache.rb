@@ -13,16 +13,20 @@ class HashCache
 
   def read(item)
     if @h.include? item then
-      val = @h[item]
-      @h.delete(item)
-      @h[item] = val
-      val    
+      self.refresh item
     else
       val = yield
       @h[item] = val
       @h.shift if @h.length > @size
       val
     end    
+  end
+  
+  def refresh(item)
+    val = @h[item]
+    @h.delete item
+    @h[item] = val
+    val        
   end
 
   def reset
