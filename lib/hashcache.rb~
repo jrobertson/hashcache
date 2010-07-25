@@ -43,7 +43,7 @@ class HashCache
   private
   
   def read_file(item)
-    File.open(item) {|f| doc = Marshal.load(f) }
+    File.open(@file_path + '/' + item) {|f| Marshal.load(f) }
   end
   
   def write_file(item, obj)
