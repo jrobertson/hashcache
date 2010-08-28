@@ -13,24 +13,24 @@ class HashCache
     @h = {}
   end
 
-  def read(item)
+  def read(item, &blk)
     if @h.include? item then
       self.refresh item
     else
-      self.write item
+      if @file_cache == true and File.exists? @file_path + '/' + item then
+	read_file item
+      else
+	self.write(item) { blk.call }
+      end
     end    
   end
   
-  def write(item)
-    if @file_cache == true and File.exists? @file_path + '/' + item then
-      read_file item
-    else
-      val = yield
-      @h[item] = val
-      @h.shift if @h.length > @size
-      write_file(item, val) if @file_cache == true
-      val
-    end
+  def write(item, &blk)
+    val = blk.call
+    @h[item] = val
+    @h.shift if @h.length > @size
+    write_file(item, val) if @file_cache == true
+    val
   end  
   
   def refresh(item)
