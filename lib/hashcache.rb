@@ -17,17 +17,21 @@ class HashCache
     if @h.include? item then
       self.refresh item
     else
-      if @file_cache == true and File.exists? @file_path + '/' + item then
-        read_file item
-      else
-        val = yield
-        @h[item] = val
-        @h.shift if @h.length > @size
-        write_file(item, val) if @file_cache == true
-        val
-      end
+      self.write item
     end    
   end
+  
+  def write(item)
+    if @file_cache == true and File.exists? @file_path + '/' + item then
+      read_file item
+    else
+      val = yield
+      @h[item] = val
+      @h.shift if @h.length > @size
+      write_file(item, val) if @file_cache == true
+      val
+    end
+  end  
   
   def refresh(item)
     val = @h[item]
@@ -50,6 +54,6 @@ class HashCache
   
   def write_file(item, obj)
     File.open(@file_path + '/' + item, 'w+') {|f| Marshal.dump(obj, f) }     
-  end  
-
+  end
+  
 end
