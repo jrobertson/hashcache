@@ -13,24 +13,30 @@ class HashCache
     @h = {}
   end
 
-  def read(item)
+  def read(item, &blk)
     if @h.include? item then
       self.refresh item
     else
       if @file_cache == true and File.exists? @file_path + '/' + item then
-        read_file item
+	read_file item
       else
-        val = yield
-        @h[item] = val
-        @h.shift if @h.length > @size
-        write_file(item, val) if @file_cache == true
-        val
+	self.write(item) { blk.call }
       end
     end    
   end
   
+  def write(item, &blk)
+    val = blk.call
+    @h[item] = val
+    @h.shift if @h.length > @size
+    write_file(item, val) if @file_cache == true
+    val
+  end  
+  
+  alias read! write
+  
   def refresh(item)
-    val = @h[item]
+    val = @h[item]    
     @h.delete item
     @h[item] = val
     val        
@@ -38,6 +44,10 @@ class HashCache
 
   def reset
     @h = {}
+  end
+  
+  def delete(item)
+    @h.delete item    
   end
   
   private
@@ -50,6 +60,6 @@ class HashCache
   
   def write_file(item, obj)
     File.open(@file_path + '/' + item, 'w+') {|f| Marshal.dump(obj, f) }     
-  end  
-
+  end
+  
 end
