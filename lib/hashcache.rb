@@ -59,7 +59,7 @@ class HashCache
   end
 
   def reset
-    @h = {}
+    @h.clear
   end
   
   def delete(item)
